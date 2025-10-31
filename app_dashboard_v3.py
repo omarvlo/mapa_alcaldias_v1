@@ -92,16 +92,39 @@ archivo_usuario = st.file_uploader("Sube tu archivo CSV", type=["csv"])
 if archivo_usuario:
     try:
         df_user = pd.read_csv(archivo_usuario)
+
         if {"estacion", "delitos_cercanos"}.issubset(df_user.columns):
             df_cmp = pd.merge(df_ref, df_user, on="estacion", suffixes=("_real", "_usuario"))
-            df_cmp["diferencia"] = abs(df_cmp["delitos_cercanos_real"] - df_cmp["delitos_cercanos_usuario"])
-            similitud = np.clip(
-                100 * (1 - df_cmp["diferencia"].sum() / df_cmp["delitos_cercanos_real"].sum()), 0, 100
+            df_cmp["diferencia"] = abs(
+                df_cmp["delitos_cercanos_real"] - df_cmp["delitos_cercanos_usuario"]
             )
 
+            similitud = np.clip(
+                100 * (
+                    1
+                    - df_cmp["diferencia"].sum()
+                    / df_cmp["delitos_cercanos_real"].sum()
+                ),
+                0,
+                100,
+            )
+
+            # === Mostrar solo la métrica global (sin revelar valores reales) ===
             st.metric("📈 Similitud general", f"{similitud:.2f}%")
-            with st.expander("Ver comparación detallada"):
-                st.dataframe(df_cmp)
+            st.caption("El valor indica qué tan cercanos están tus resultados al cálculo del sistema.")
+
+            # --- 🔒 Ocultamos los valores reales y el detalle del merge ---
+            # with st.expander("Ver comparación detallada"):
+            #     st.dataframe(df_cmp)
+            #     st.caption("⚠️ Los valores reales se mantienen ocultos por razones académicas.")
+
+            # Retroalimentación automática
+            if similitud > 90:
+                st.success("Excelente coincidencia 🎉 — tus resultados son prácticamente idénticos al cálculo base.")
+            elif similitud > 70:
+                st.warning("Buena aproximación ✅ — revisa diferencias por estación para mejorar la precisión.")
+            else:
+                st.error("Diferencia notable ⚠️ — revisa tu método de cálculo o el radio usado.")
         else:
             st.error("El CSV debe contener las columnas: 'estacion' y 'delitos_cercanos'.")
     except Exception as e:
