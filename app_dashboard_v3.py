@@ -79,13 +79,14 @@ st.subheader("📊 Reto: comparación de incidentes cercanos al Metro")
 
 # --- Cálculo base (oficial) ---
 df_ref = calcular_incidentes_cercanos(df, df_metro, radio=RADIO_METROS)
+'''
 st.download_button(
     "📥 Descargar resultados base (referencia oficial)",
     df_ref.to_csv(index=False).encode("utf-8"),
     "resultado_base.csv",
     "text/csv",
 )
-
+'''
 # --- Carga y comparación ---
 archivo_usuario = st.file_uploader("Sube tu archivo CSV", type=["csv"])
 if archivo_usuario:
